@@ -225,50 +225,56 @@ PublicIP()
 	fi
 }
 
+
 # configGet - Download latest shell configuration files.
 # =============================================================================
 configGet()
 {
-	# Backup existing configuration files.
-	statusMessage "Archiving old files"
-	cp ~/.bashrc ~/.bashrc.orig
-	cp ~/.screenrc ~/.screenrc.orig
-	cp ~/.vimrc ~/.vimrc.orig
-	statusMessage "Archiving old files" true
+	cfgDotRoot="$HOME/.dotfiles"
+	cfgGitRepo="https://github.com/davehope/dotfiles.git"
 
-	# Download new version to .new
-	statusMessage "Downloading new files"
-	if [ $EXISTS_WGET ]; then
-		wget -q "${CONFURL}bashrc" -O ~/.bashrc.new
-		wget -q "${CONFURL}screenrc" -O ~/.screenrc.new
-		wget -q "${CONFURL}vimrc" -O ~/.vimrc.new
-		wget -q "${CONFURL}vim-colors.vim" -O ~/vim-colors.vim.new
-		statusMessage "Downloading new files" true
-	elif [ $EXISTS_CURL ]; then
-		curl -s ${CONFURL}bashrc -o ~/.bashrc.new
-		curl -s ${CONFURL}screenrc -o ~/.screenrc.new
-		curl -s ${CONFURL}vimrc -o ~/.vimrc.new
-		curl -s ${CONFURL}vim-colors.vim -o ~/vim-colors.vim.new
-		statusMessage "Downloading new files" true
+	statusMessage "Downloading latest files"
+	if [ ! -d "$cfgDotRoot" ]; then
+		# No local repo, create one.
+		git clone $cfgGitRepo $cfgDotRoot > /dev/null 2>&1
 	else
-		statusMessage "Downloading new files" false
+		# Update existing repo.
+		cd $cfgDotRoot && git pull > /dev/null 2>&1 && cd 
 	fi
+	statusMessage "Downloading latest files" true
 
-	# Replace existing configuration with new versions.
-	statusMessage "Replacing old files"
-	mv ~/.bashrc.new ~/.bashrc > /dev/null
-	mv ~/.screenrc.new ~/.screenrc > /dev/null
-	mv ~/.vimrc.new ~/.vimrc
-	if [ ! -d ~/.vim/colors ]; then
-		mkdir -p ~/.vim/colors/
-	fi
-	mv ~/vim-colors.vim.new ~/.vim/colors/vim-colors.vim
-	statusMessage "Replacing old files" true
+	statusMessage "Creating symlinks"
+	# Iterate over config files downloaded and create links
+	for f in `find $cfgDotRoot -maxdepth 3 -not -path "$cfgDotRoot/.git*"`
+	do
+		dest=$HOME/${f##*${cfgDotRoot}/}
+
+		# Skip the $cfgDotRoot directory and any readme file.
+		if [ $f == $cfgDotRoot ] || [ $f == "$cfgDotRoot/README.md" ] ; then
+			continue
+		fi
+
+		# If this a directory, create it rather than create a link.
+		if [ -d $f ]; then
+			mkdir -p $dest
+		else
+			# If the destination file already exists, remove it.
+			if [ -f $dest ]; then
+				mv $dest $dest.old
+			fi
+			# If the symlink exists, unlink it.
+			if [ -h $dest ]; then
+				unlink $dest
+			fi
+			# Link the config file to our git repo
+			ln -s $f $dest
+		fi
+	done
+	statusMessage "Creating symlinks" true
 
 	# Download local bin directory?
 	read -p "Download local bin directory (y/n) ? "
 	if [ "$REPLY"  = 'y' ]; then
-
 		if [ $EXISTS_WGET ]; then
 			wget -q "${CONFURL}bin.tar" -O ~/bin.tar
 		elif [ $EXISTS_CURL ]; then
@@ -290,6 +296,7 @@ configGet()
 		source ~/.bashrc
 	fi
 }
+
 
 # downloads the latest backup of my website using the cpanel backup stuff.
 # =============================================================================
@@ -338,3 +345,4 @@ wav2alac()
 if [ -f "$HOME/.bashrc.local" ]; then
 	. $HOME/.bashrc.local
 fi
+
