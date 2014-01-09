@@ -18,7 +18,6 @@ clrGreen="$(tput setf 2)"	# Green
 clrPurple="$(tput setf 5)"	# Purple
 clrReset="$(tput sgr 0)"	# Reset all colour.
 clrGrey="$(tput setf 7)"	# Grey
-CONFURL="http://hope.mx/Configs/"
 
 # =============================================================================
 # INTERNAL FUNCTIONS
@@ -233,7 +232,7 @@ configGet()
 	cfgDotRoot="$HOME/.dotfiles"
 	cfgGitRepo="https://github.com/davehope/dotfiles.git"
 
-	statusMessage "Downloading latest files"
+	statusMessage "Cloning configuration from Git"
 	if [ ! -d "$cfgDotRoot" ]; then
 		# No local repo, create one.
 		git clone $cfgGitRepo $cfgDotRoot > /dev/null 2>&1
@@ -241,7 +240,27 @@ configGet()
 		# Update existing repo.
 		cd $cfgDotRoot && git pull > /dev/null 2>&1 && cd 
 	fi
-	statusMessage "Downloading latest files" true
+	if [ $? == 0 ]; then
+		statusMessage "Cloning configuration from Git" true
+	else
+		statusMessage "Cloning configuration from Git" false
+		statusMessage "Downloading files using wget"
+		if [ $EXISTS_WGET ]; then
+			wget -q https://raw2.github.com/davehope/dotfiles/master/.bashrc -O $cfgDotRoot/.bashrc
+			wget -q https://raw2.github.com/davehope/dotfiles/master/.screenrc -O $cfgDotRoot/.screenrc
+			wget -q https://raw2.github.com/davehope/dotfiles/master/.vimrc -O $cfgDotRoot/.vimrc
+			mkdir -p $cfgDotRoot/vim/colors
+			wget -q https://raw2.github.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -O $cfgDotRoot/.vim/colors/vim-colors.vim
+			statusMessage "Downloading files using wget" true
+		else
+			curl -s https://raw2.github.com/davehope/dotfiles/master/.bashrc -o $cfgDotRoot/.bashrc
+			curl -s https://raw2.github.com/davehope/dotfiles/master/.screenrc -o $cfgDotRoot/.screenrc
+			curl -s https://raw2.github.com/davehope/dotfiles/master/.vimrc -o $cfgDotRoot/.vimrc
+			mkdir -p $cfgDotRoot/vim/colors
+			curl -s https://raw2.github.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -o $cfgDotRoot/.vim/colors/vim-colors.vim
+			statusMessage "Downloading files using wget" true
+		fi
+	fi
 
 	statusMessage "Creating symlinks"
 	# Iterate over config files downloaded and create links
@@ -259,7 +278,7 @@ configGet()
 			mkdir -p $dest
 		else
 			# If the destination file already exists, remove it.
-			if [ -f $dest ]; then
+			if [ -f $dest ] && [ ! -h $dest ]; then
 				mv $dest $dest.old
 			fi
 			# If the symlink exists, unlink it.
