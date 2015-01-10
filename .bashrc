@@ -246,18 +246,18 @@ configGet()
 		statusMessage "Cloning configuration from Git" false
 		statusMessage "Downloading files using wget"
 		if [ $EXISTS_WGET ]; then
-			wget -q https://raw2.github.com/davehope/dotfiles/master/.bashrc -O $cfgDotRoot/.bashrc
-			wget -q https://raw2.github.com/davehope/dotfiles/master/.screenrc -O $cfgDotRoot/.screenrc
-			wget -q https://raw2.github.com/davehope/dotfiles/master/.vimrc -O $cfgDotRoot/.vimrc
+			wget -q https://raw.githubusercontent.com/davehope/dotfiles/master/.bashrc -O $cfgDotRoot/.bashrc
+			wget -q https://raw.githubusercontent.com/davehope/dotfiles/master/.screenrc -O $cfgDotRoot/.screenrc
+			wget -q https://raw.githubusercontent.com/davehope/dotfiles/master/.vimrc -O $cfgDotRoot/.vimrc
 			mkdir -p $cfgDotRoot/vim/colors
-			wget -q https://raw2.github.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -O $cfgDotRoot/.vim/colors/vim-colors.vim
+			wget -q https://raw.githubusercontent.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -O $cfgDotRoot/.vim/colors/vim-colors.vim
 			statusMessage "Downloading files using wget" true
 		else
-			curl -s https://raw2.github.com/davehope/dotfiles/master/.bashrc -o $cfgDotRoot/.bashrc
-			curl -s https://raw2.github.com/davehope/dotfiles/master/.screenrc -o $cfgDotRoot/.screenrc
-			curl -s https://raw2.github.com/davehope/dotfiles/master/.vimrc -o $cfgDotRoot/.vimrc
+			curl -s https://raw.githubusercontent.com/davehope/dotfiles/master/.bashrc -o $cfgDotRoot/.bashrc
+			curl -s https://raw.githubusercontent.com/davehope/dotfiles/master/.screenrc -o $cfgDotRoot/.screenrc
+			curl -s https://raw.githubusercontent.com/davehope/dotfiles/master/.vimrc -o $cfgDotRoot/.vimrc
 			mkdir -p $cfgDotRoot/vim/colors
-			curl -s https://raw2.github.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -o $cfgDotRoot/.vim/colors/vim-colors.vim
+			curl -s https://raw.githubusercontent.com/davehope/dotfiles/master/.vim/colors/vim-colors.vim -o $cfgDotRoot/.vim/colors/vim-colors.vim
 			statusMessage "Downloading files using wget" true
 		fi
 	fi
