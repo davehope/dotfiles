@@ -18,6 +18,13 @@ clrGreen="$(tput setf 2)"	# Green
 clrPurple="$(tput setf 5)"	# Purple
 clrReset="$(tput sgr 0)"	# Reset all colour.
 clrGrey="$(tput setf 7)"	# Grey
+if [ $TERM = 'xterm-256color' ]; then
+	clrRed="$(tput setaf 1)"
+	clrWhite="$(tput setaf 7)"
+	clrGreen="$(tput setaf 2)"
+	clrPurple="$(tput setaf 5)"
+	clrGrey="$(tput setaf 8)"
+fi
 
 # =============================================================================
 # INTERNAL FUNCTIONS
@@ -28,7 +35,7 @@ clrGrey="$(tput setf 7)"	# Grey
 # =============================================================================
 osPlatform()
 {
-	OS_PLATFORM=$(uname)	
+	OS_PLATFORM=$(uname)
 	echo $OS_PLATFORM
 }
 
@@ -37,7 +44,7 @@ osPlatform()
 # =============================================================================
 osProcessor()
 {
-	OS_PROCESSOR=$(uname -p)	
+	OS_PROCESSOR=$(uname -p)
 	echo $OS_PROCESSOR
 }
 
@@ -47,7 +54,7 @@ osProcessor()
 osVersion()
 {
 	OS_PLATFORM=$(osPlatform);
-	
+
 	if [ $OS_PLATFORM = 'Linux' ]; then
 	        OS_NAME=$(lsb_release -i | cut -f 2)
 	elif [ $OS_PLATFORM = 'Darwin' ]; then
@@ -55,7 +62,7 @@ osVersion()
 	else
 	        OS_NAME='Unknown'
 	fi
-	echo $OS_NAME	
+	echo $OS_NAME
 }
 
 # exists - Is file in path?
@@ -85,11 +92,11 @@ statusMessage()
 	messageLen=$(( ${#messageClean} -3 ))
 
 	# If we've not been given a status, just print message.
-	if [[ -z "$status" ]] ; then 
+	if [[ -z "$status" ]] ; then
 		echo ${message}
 	# We've got a status to print.
 	else
- 
+
 		# Are we printing success, or failure?
 		if $status ; then
 			statusMessage="${clrGreen}Done ${clrReset}"
@@ -118,7 +125,6 @@ statusMessage()
 # =============================================================================
 alias wtf="watch -n 1 w -hs"
 alias cls="clear"
-alias starwars="telnet towel.blinkenlights.nl"
 alias grep="grep --color=always -i"
 
 # History settings.
@@ -238,7 +244,7 @@ configGet()
 		git clone $cfgGitRepo $cfgDotRoot > /dev/null 2>&1
 	else
 		# Update existing repo.
-		cd $cfgDotRoot && git pull > /dev/null 2>&1 && cd 
+		cd $cfgDotRoot && git pull > /dev/null 2>&1 && cd
 	fi
 	if [ $? == 0 ]; then
 		statusMessage "Cloning configuration from Git" true
@@ -316,52 +322,14 @@ configGet()
 	fi
 }
 
-
-# downloads the latest backup of my website using the cpanel backup stuff.
-# =============================================================================
-cpanelBackup()
-{
-	# URL to backup.
-	read -p "Domain "
-	websiteURL=$REPLY;
-	
-	# Get username
-	read -p "Username "
-	confUser=$REPLY;
-
-	# Get password.
-	stty -echo
-	read -p "Password "
-	stty echo
-	confPass=$REPLY;
-	
-	wget --http-user=$confUser --http-password=$confPass http://$websiteURL:2082/getbackup/$websiteURL-`date +"%Y.%m.%d"`.tar.gz
-}
-
 setupSSH()
 {
 	read -p "System to copy keys to (user@host): "
 	ssh $REPLY 'cat >> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
 }
 
-flac2alac()
-{
-	for i in *.flac; do
-		ffmpeg -i "$i" -acodec alac "`basename "$i" .flac`.m4a";
-	done;
-}
-
-wav2alac()
-{
-	for i in *.wav; do
-		ffmpeg -i "$i" -acodec alac "`basename "$i" .wav`.m4a";
-	done;
-}
-
-
 # Allow local overrides to this file in bashrc.locl 
 # =============================================================================
 if [ -f "$HOME/.bashrc.local" ]; then
 	. $HOME/.bashrc.local
 fi
-
